@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"docbot/commands"
-	"log"
-	"os"
-	"strconv"
 	"github.com/andersfylling/disgord"
 	"github.com/andersfylling/disgord/std"
 	"github.com/joho/godotenv"
+	"log"
+	"os"
+	"strconv"
 )
 
 func main() {
@@ -17,15 +17,15 @@ func main() {
 	}
 
 	client := disgord.New(disgord.Config{
-		BotToken: os.Getenv("DISGORD_TOKEN"),
-		Logger:   disgord.DefaultLogger(true),
+		BotToken:    os.Getenv("DISGORD_TOKEN"),
+		Logger:      disgord.DefaultLogger(true),
 		ProjectName: "docbot",
 		ShardConfig: disgord.ShardConfig{
-			ShardIDs: []uint{0, 1},
+			ShardIDs:   []uint{0, 1},
 			ShardCount: 2,
 		},
 		Presence: &disgord.UpdateStatusPayload{
-			AFK: true,
+			AFK:    true,
 			Status: disgord.StatusDnd,
 			Game: &disgord.Activity{
 				Name: "with documentation",
@@ -36,7 +36,7 @@ func main() {
 	defer client.StayConnectedUntilInterrupted(context.Background())
 	logFilter, _ := std.NewLogFilter(client)
 	filter, _ := std.NewMsgFilter(context.Background(), client)
-	filter.SetPrefix("doc ")
+	filter.SetPrefix("docs ")
 	logger := client.Logger()
 	myself, _ := client.GetCurrentUser(context.Background())
 
@@ -75,19 +75,19 @@ func main() {
 			channels, _ := session.GetGuildChannels(event.Ctx, event.Member.GuildID)
 			_, _ = session.CreateMessage(event.Ctx, channels[0].ID, &disgord.CreateMessageParams{
 				Embed: &disgord.Embed{
-					Title: "docbot",
+					Title:       "docbot",
 					Description: "**documentation is love, documentation is life**",
 					Thumbnail: &disgord.EmbedThumbnail{
 						URL: self.Avatar,
 					},
 					Fields: []*disgord.EmbedField{{
-						Name: "**start by typing doc help**",
-						Value: "**made with <3, the go programming language, and andersfylling/disgord**",
+						Name:   "**start by typing doc help**",
+						Value:  "**made with <3, the go programming language, and andersfylling/disgord**",
 						Inline: true,
 					}},
 					Footer: &disgord.EmbedFooter{
 						IconURL: self.Avatar,
-						Text: self.Username + "#" + self.Discriminator.String(),
+						Text:    self.Username + "#" + self.Discriminator.String(),
 					},
 				},
 			})

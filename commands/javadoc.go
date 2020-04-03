@@ -13,17 +13,17 @@ import (
 
 func JavaDocCommand(session disgord.Session, event *disgord.MessageCreate) {
 	if args := regexp.MustCompile("\\s+").Split(event.Message.Content, 2); args[0] == "java" {
-		standardDocs(session, event, args)
+		standardJDocs(session, event, args)
 	}
 }
 
-func standardDocs(session disgord.Session, event *disgord.MessageCreate, args []string) {
+func standardJDocs(session disgord.Session, event *disgord.MessageCreate, args []string) {
 	var content string
 	var url string
 	if err := filepath.Walk("./resources/docs/api/java.base", func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() && info.Name() == "class-use" {
 			return filepath.SkipDir
-		} else if err == nil && regexp.MustCompile("^((?i)" + args[1] + "\\.html)").MatchString(info.Name()) {
+		} else if err == nil && regexp.MustCompile("^((?i)"+args[1]+"\\.html)").MatchString(info.Name()) {
 			if c, err := ioutil.ReadFile(path); err != nil {
 				return err
 			} else {
@@ -36,7 +36,7 @@ func standardDocs(session disgord.Session, event *disgord.MessageCreate, args []
 		}
 	}); err != nil {
 		_, _ = session.CreateMessage(event.Ctx, event.Message.ChannelID, &disgord.CreateMessageParams{
-			Content: READ_FAILED,
+			Content: ReadFailed,
 		})
 	} else {
 
@@ -48,23 +48,36 @@ func standardDocs(session disgord.Session, event *disgord.MessageCreate, args []
 		inheritanceTree := contentContainer.Find("div", "class", "inheritance")
 		description := contentContainer.Find("section", "class", "description")
 		additionalInfo := contentContainer.Find("pre")
-		summary := description.Find("div", "class", "block")
+		summary := description.FindStrict("div", "class", "block")
+
+		var tree string
+		if inheritanceTree.Pointer == nil {
+			tree = "No inheritance tree available."
+		} else {
+			tree = inheritanceTree.FullText()
+		}
+		var definition string
+		if workaround, ok := JavaDocWorkarounds[title.Text()]; ok {
+			definition = workaround
+		} else {
+			definition = regexp.MustCompile("\n\n").Split(summary.FullText(), -1)[0]
+		}
 
 		if _, err := session.CreateMessage(event.Ctx, event.Message.ChannelID, &disgord.CreateMessageParams{
 			Embed: &disgord.Embed{
-				Title:  title.Text(),
-				URL: url,
-				Color: 0xd32ce6,
-				Description: regexp.MustCompile("\n\n").Split(summary.FullText(), -1)[0],
+				Title:       title.Text(),
+				URL:         url,
+				Color:       0xb07219,
+				Description: definition,
 				Fields: []*disgord.EmbedField{
 					{
-						Name: "Class Signature",
-						Value: additionalInfo.FullText(),
+						Name:   "Class Signature",
+						Value:  additionalInfo.FullText(),
 						Inline: true,
 					},
 					{
-						Name: "Inheritance Tree",
-						Value: inheritanceTree.FullText(),
+						Name:   "Inheritance Tree",
+						Value:  tree,
 						Inline: true,
 					},
 				},

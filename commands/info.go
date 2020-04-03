@@ -19,16 +19,15 @@ func InfoCommand(session disgord.Session, event *disgord.MessageCreate) {
 	} else {
 		gatewayPing, _ := session.AvgHeartbeatLatency()
 		owner, _ := session.GetUser(event.Ctx, snowflake.ParseSnowflakeString("175610330217447424"))
-		self, _ := session.GetCurrentUser(event.Ctx)
 		var sb strings.Builder
 		sb.WriteString("**REST: " + strconv.Itoa(apiPing("https://discordapp.com/api/v6")) + " ms\n")
-		sb.WriteString("WebSocket: " + strconv.Itoa(int(gatewayPing / time.Millisecond)) + " ms\n")
+		sb.WriteString("WebSocket: " + strconv.Itoa(int(gatewayPing/time.Millisecond)) + " ms\n")
 		sb.WriteString("CDN: " + strconv.Itoa(apiPing("https://cdn.discordapp.com")) + "ms**")
 		_, err := session.CreateMessage(event.Ctx, event.Message.ChannelID, &disgord.CreateMessageParams{
 			Embed: &disgord.Embed{
 				Title:       "docbot",
 				Description: "**a helper bot written with disgord**",
-				Color: 0xd32ce6,
+				Color:       0xd32ce6,
 				Fields: []*disgord.EmbedField{
 					{
 						Name:   "**disgord**",
@@ -51,7 +50,7 @@ func InfoCommand(session disgord.Session, event *disgord.MessageCreate) {
 
 		if err != nil {
 			_, _ = session.CreateMessage(event.Ctx, event.Message.ChannelID, &disgord.CreateMessageParams{
-				Content: "Failed to send message!\n" + err.Error() ,
+				Content: "Failed to send message!\n" + err.Error(),
 			})
 		}
 	}
