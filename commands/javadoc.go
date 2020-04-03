@@ -1,52 +1,76 @@
 package commands
 
 import (
+	"github.com/anaskhan96/soup"
+	"github.com/andersfylling/disgord"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
-	"github.com/anaskhan96/soup"
-	"github.com/andersfylling/disgord"
+	"strings"
 )
 
-type JavaDocCommand struct{}
+func JavaDocCommand(session disgord.Session, event *disgord.MessageCreate) {
+	if args := regexp.MustCompile("\\s+").Split(event.Message.Content, 2); args[0] == "java" {
+		standardDocs(session, event, args)
+	}
+}
 
-func (cmd JavaDocCommand) Handle(session disgord.Session, event *disgord.MessageCreate) {
-	if event.Message.Content == "java" {
-		var content string
-		if err := filepath.Walk("./resources/docs/api/java.base", func(path string, info os.FileInfo, err error) error {
-			if err == nil && regexp.MustCompile("((?i)" + event.Message.Content + "\\.html)").MatchString(info.Name()) {
-				if c, err := ioutil.ReadFile(info.Name()); err != nil {
-					return err
-				} else {
-					content = string(c)
-					return nil
-				}
-			} else {
+func standardDocs(session disgord.Session, event *disgord.MessageCreate, args []string) {
+	var content string
+	var url string
+	if err := filepath.Walk("./resources/docs/api/java.base", func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() && info.Name() == "class-use" {
+			return filepath.SkipDir
+		} else if err == nil && regexp.MustCompile("^((?i)" + args[1] + "\\.html)").MatchString(info.Name()) {
+			if c, err := ioutil.ReadFile(path); err != nil {
 				return err
+			} else {
+				url = "https://docs.oracle.com/en/java/javase/14/" + strings.ReplaceAll(path, "resources/", "")
+				content = string(c)
+				return nil
 			}
-		}); err != nil {
-			session.CreateMessage(event.Ctx, event.Message.ChannelID, &disgord.CreateMessageParams{
-				Content: READ_FAILED,
-			})
 		} else {
-			doc := soup.HTMLParse(content)
-			title := doc.Find("title")
-			block := doc.Find("div", "class", "block")
-			description := regexp.MustCompile("\\n").Split(block.Text(), -1)
+			return err
+		}
+	}); err != nil {
+		_, _ = session.CreateMessage(event.Ctx, event.Message.ChannelID, &disgord.CreateMessageParams{
+			Content: READ_FAILED,
+		})
+	} else {
 
-			session.CreateMessage(event.Ctx, event.Message.ChannelID, &disgord.CreateMessageParams{
-				Embed: &disgord.Embed{
-					Title: title.Text(),
-					Description: description[0],
-					Thumbnail: &disgord.EmbedThumbnail{
-						URL: "https://logos-download.com/wp-content/uploads/2016/10/Java_logo.png",
+		doc := soup.HTMLParse(content)
+		main := doc.Find("main", "role", "main")
+		header := main.Find("div", "class", "header")
+		title := header.Find("h1", "class", "title")
+		contentContainer := main.Find("div", "class", "contentContainer")
+		inheritanceTree := contentContainer.Find("div", "class", "inheritance")
+		description := contentContainer.Find("section", "class", "description")
+		additionalInfo := contentContainer.Find("pre")
+		summary := description.Find("div", "class", "block")
+
+		if _, err := session.CreateMessage(event.Ctx, event.Message.ChannelID, &disgord.CreateMessageParams{
+			Embed: &disgord.Embed{
+				Title:  title.Text(),
+				URL: url,
+				Color: 0xd32ce6,
+				Description: regexp.MustCompile("\n\n").Split(summary.FullText(), -1)[0],
+				Fields: []*disgord.EmbedField{
+					{
+						Name: "Class Signature",
+						Value: additionalInfo.FullText(),
+						Inline: true,
 					},
-					Footer: &disgord.EmbedFooter{
-						IconURL: "https://www.stickpng.com/assets/images/58480979cef1014c0b5e4901.png",
+					{
+						Name: "Inheritance Tree",
+						Value: inheritanceTree.FullText(),
+						Inline: true,
 					},
 				},
-			})
+			},
+		}); err != nil {
+			log.Println(err)
 		}
 	}
 }

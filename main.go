@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"docbot/commands"
+	"log"
 	"os"
 	"strconv"
 	"github.com/andersfylling/disgord"
@@ -12,7 +13,7 @@ import (
 
 func main() {
 	if err := godotenv.Load("./resources/.env"); err != nil {
-		panic("Failed to load env file!")
+		log.Println("Failed to load .env file, using global env vars...")
 	}
 
 	client := disgord.New(disgord.Config{
@@ -27,11 +28,12 @@ func main() {
 			AFK: true,
 			Status: disgord.StatusDnd,
 			Game: &disgord.Activity{
-				Name: "documentation",
+				Name: "with documentation",
 				Type: 1,
 			},
 		},
 	})
+	defer client.StayConnectedUntilInterrupted(context.Background())
 	logFilter, _ := std.NewLogFilter(client)
 	filter, _ := std.NewMsgFilter(context.Background(), client)
 	filter.SetPrefix("doc ")
@@ -91,5 +93,4 @@ func main() {
 			})
 		}
 	})
-	defer client.StayConnectedUntilInterrupted(context.Background())
 }
