@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 )
 
 func GoDocCommand(session disgord.Session, event *disgord.MessageCreate) {
@@ -20,12 +21,12 @@ func standardGoDocs(session disgord.Session, event *disgord.MessageCreate, args 
 	var content string
 	var url string
 	if err := filepath.Walk("./resources/pkg", func(path string, info os.FileInfo, err error) error {
-		if err == nil && regexp.MustCompile("^((?i)"+args[1]+")").MatchString(info.Name()) {
+		if err == nil && regexp.MustCompile("^((?i)\\b"+args[1]+"\\b)").MatchString(info.Name()) &&
+			strings.ToLower(args[1]) == strings.ToLower(info.Name()) && info.IsDir() {
 			path += "/index.html"
 			if c, err := ioutil.ReadFile(path); err != nil {
 				return err
 			} else {
-				log.Println(path)
 				url = "https://godoc.org/" + info.Name()
 				content = string(c)
 				return nil
@@ -33,8 +34,7 @@ func standardGoDocs(session disgord.Session, event *disgord.MessageCreate, args 
 		} else {
 			return err
 		}
-	}); err != nil {
-		log.Println(err)
+	}); err != nil || len(content) == 0 {
 		_, _ = session.CreateMessage(event.Ctx, event.Message.ChannelID, &disgord.CreateMessageParams{
 			Content: ReadFailed,
 		})
@@ -51,7 +51,7 @@ func standardGoDocs(session disgord.Session, event *disgord.MessageCreate, args 
 			Embed: &disgord.Embed{
 				Title:       title.Text(),
 				URL:         url,
-				Color:       0x00ADD8,
+				Color:       0x00add8,
 				Description: importStmt + description.Text(),
 			},
 		}); err != nil {

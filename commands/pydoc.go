@@ -21,7 +21,8 @@ func standardPyDocs(session disgord.Session, event *disgord.MessageCreate, args 
 	var content string
 	var url string
 	if err := filepath.Walk("./resources/python-3.8.2-docs-html/library", func(path string, info os.FileInfo, err error) error {
-		if err == nil && regexp.MustCompile("^((?i)"+args[1]+"\\.html)").MatchString(info.Name()) {
+		if err == nil && regexp.MustCompile("^((?i)\\b"+args[1]+"\\.html\\b)").MatchString(info.Name()) &&
+			strings.ToLower(args[1]+".html") == strings.ToLower(info.Name()) {
 			if c, err := ioutil.ReadFile(path); err != nil {
 				return err
 			} else {
@@ -32,7 +33,7 @@ func standardPyDocs(session disgord.Session, event *disgord.MessageCreate, args 
 		} else {
 			return err
 		}
-	}); err != nil {
+	}); err != nil || len(content) == 0 {
 		_, _ = session.CreateMessage(event.Ctx, event.Message.ChannelID, &disgord.CreateMessageParams{
 			Content: ReadFailed,
 		})

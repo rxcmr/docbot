@@ -23,7 +23,8 @@ func standardJDocs(session disgord.Session, event *disgord.MessageCreate, args [
 	if err := filepath.Walk("./resources/docs/api/java.base", func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() && info.Name() == "class-use" {
 			return filepath.SkipDir
-		} else if err == nil && regexp.MustCompile("^((?i)"+args[1]+"\\.html)").MatchString(info.Name()) {
+		} else if err == nil && regexp.MustCompile("^((?i)\\b"+args[1]+"\\.html\\b)").MatchString(info.Name()) &&
+			strings.ToLower(args[1]+".html") == strings.ToLower(info.Name()) {
 			if c, err := ioutil.ReadFile(path); err != nil {
 				return err
 			} else {
@@ -34,12 +35,11 @@ func standardJDocs(session disgord.Session, event *disgord.MessageCreate, args [
 		} else {
 			return err
 		}
-	}); err != nil {
+	}); err != nil || len(content) == 0 {
 		_, _ = session.CreateMessage(event.Ctx, event.Message.ChannelID, &disgord.CreateMessageParams{
 			Content: ReadFailed,
 		})
 	} else {
-
 		doc := soup.HTMLParse(content)
 		main := doc.Find("main", "role", "main")
 		header := main.Find("div", "class", "header")
@@ -63,8 +63,6 @@ func standardJDocs(session disgord.Session, event *disgord.MessageCreate, args [
 		} else if inheritanceTree.Pointer != nil {
 			tree = inheritanceTree.FullText()
 		}
-
-		summary.FindNextSibling()
 
 		if _, err := session.CreateMessage(event.Ctx, event.Message.ChannelID, &disgord.CreateMessageParams{
 			Embed: &disgord.Embed{
