@@ -51,17 +51,20 @@ func standardJDocs(session disgord.Session, event *disgord.MessageCreate, args [
 		summary := description.FindStrict("div", "class", "block")
 
 		var tree string
-		if inheritanceTree.Pointer == nil {
-			tree = "No inheritance tree available."
-		} else {
-			tree = inheritanceTree.FullText()
-		}
 		var definition string
 		if workaround, ok := JavaDocWorkarounds[title.Text()]; ok {
-			definition = workaround
+			definition = workaround(summary, &tree)
 		} else {
 			definition = regexp.MustCompile("\n\n").Split(summary.FullText(), -1)[0]
 		}
+
+		if inheritanceTree.Pointer == nil && tree == "" {
+			tree = "No inheritance tree available. If you see this, it means it wasn't worked around yet."
+		} else if inheritanceTree.Pointer != nil {
+			tree = inheritanceTree.FullText()
+		}
+
+		summary.FindNextSibling()
 
 		if _, err := session.CreateMessage(event.Ctx, event.Message.ChannelID, &disgord.CreateMessageParams{
 			Embed: &disgord.Embed{

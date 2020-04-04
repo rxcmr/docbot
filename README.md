@@ -8,3 +8,6 @@ How to use:
 - create .env file in resources folder (make the dir first) or export your DISGORD_TOKEN
 - download javadocs and godocs and place them in resources
 - profit?
+
+### Sample 
+![Sample](demo.png)
