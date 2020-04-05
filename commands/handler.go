@@ -5,6 +5,7 @@ var Commands = []interface{}{
 	GoDocCommand,
 	PyDocCommand,
 	KDocCommand,
+	RubyDocCommand,
 	ShutdownCommand,
 	InfoCommand,
 }
