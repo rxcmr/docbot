@@ -13,7 +13,11 @@ import (
 
 func main() {
 	if err := godotenv.Load("./resources/.env"); err != nil {
-		log.Println("Failed to load .env file, using global env vars...")
+		log.Println("Creating an empty .env file at resources/.env")
+		_,_ = os.Create("./resources/.env")
+		log.Println("Be sure to fill in the .env file before starting again")
+		process, _ := os.FindProcess(os.Getpid())
+		_ = process.Signal(os.Interrupt)
 	}
 
 	client := disgord.New(disgord.Config{
