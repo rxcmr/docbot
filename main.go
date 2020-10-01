@@ -3,17 +3,19 @@ package main
 import (
 	"context"
 	"docbot/commands"
-	"github.com/andersfylling/disgord"
-	"github.com/andersfylling/disgord/std"
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"strconv"
+
+	"github.com/andersfylling/disgord"
+	"github.com/andersfylling/disgord/std"
+	"github.com/joho/godotenv"
 )
 
 func main() {
 	if err := godotenv.Load("./resources/.env"); err != nil {
 		log.Println("Creating an empty .env file at resources/.env")
+		_,_ = os.Mkdir("resources", 0777)
 		_,_ = os.Create("./resources/.env")
 		log.Println("Be sure to fill in the .env file before starting again")
 		process, _ := os.FindProcess(os.Getpid())
