@@ -27,15 +27,15 @@ func main() {
 		Logger:      disgord.DefaultLogger(true),
 		ProjectName: "docbot",
 		ShardConfig: disgord.ShardConfig{
-			ShardIDs:   []uint{0, 1},
-			ShardCount: 2,
+			ShardIDs:   []uint{0, 1, 2},
+			ShardCount: 3,
 		},
 		Presence: &disgord.UpdateStatusPayload{
 			AFK:    true,
 			Status: disgord.StatusDnd,
 			Game: &disgord.Activity{
 				Name: "with documentation",
-				Type: 1,
+				Type: 2,
 			},
 		},
 	})
