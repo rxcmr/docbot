@@ -35,7 +35,7 @@ func main() {
 			Status: disgord.StatusDnd,
 			Game: &disgord.Activity{
 				Name: "with documentation",
-				Type: 1,
+				Type: 2,
 			},
 		},
 	})
