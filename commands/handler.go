@@ -6,6 +6,5 @@ var Commands = []interface{}{
 	PyDocCommand,
 	KDocCommand,
 	RubyDocCommand,
-	ShutdownCommand,
 	InfoCommand,
 }
