@@ -85,6 +85,11 @@ func standardJDocs(session disgord.Session, event *disgord.MessageCreate, args [
 			},
 		}); err != nil {
 			log.Println(err)
+			session.CreateMessage(event.Ctx, event.Message.ChannelId, &disgord.CreateMessageParams{
+				Embed: &disgord.Embed{
+					Title: "oops",
+				}
+			}
 		}
 	}
 }
